@@ -3,16 +3,13 @@ const rooms = new Map();
 Deno.serve((req) => {
   const url = new URL(req.url);
   
-  // 1. Normal browser check
   if (req.headers.get("upgrade") != "websocket") {
-    return new Response("Cloud Sync Server is running perfectly!");
+    return new Response("Cloud Sync Server is Online!");
   }
 
-  // 2. Get the PIN (Room)
   const room = url.searchParams.get("room");
   if (!room) return new Response("Missing room PIN", { status: 400 });
 
-  // 3. Upgrade to WebSocket
   const { socket, response } = Deno.upgradeWebSocket(req);
   
   socket.onopen = () => {
@@ -21,7 +18,6 @@ Deno.serve((req) => {
     console.log(`Phone joined room: ${room}`);
   };
 
-  // 4. Forward messages
   socket.onmessage = (e) => {
     const clients = rooms.get(room);
     if (clients) {
@@ -33,7 +29,6 @@ Deno.serve((req) => {
     }
   };
 
-  // 5. Cleanup on disconnect
   socket.onclose = () => {
     const clients = rooms.get(room);
     if (clients) {
